@@ -17,7 +17,7 @@ async function fetchQuestionsList() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            columns: ["xata_id", "created_by", "question"],
+            columns: ["id", "created_by", "question"], // Alterado xata_id para id
             page: { size: 15 }
         })
     };
@@ -27,7 +27,7 @@ async function fetchQuestionsList() {
         const data = await response.json();
         console.log("Questões carregadas:", data);
 
-        const records = data.records || []; // Verifica se há registros
+        const records = data.records || [];
         renderQuestionList(records);
     } catch (error) {
         console.error("Erro ao buscar questões:", error);
@@ -40,21 +40,20 @@ function renderQuestionList(questions) {
     listContainer.innerHTML = '';
 
     questions.forEach(q => {
-        console.log("Questão recebida:", q); // Verificar a estrutura do objeto
+        console.log("Questão recebida:", q); // Verifica a estrutura do objeto
 
         const item = document.createElement('div');
         item.classList.add('question-item');
         item.textContent = q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '');
         
-        // Certificar-se de que xata_id está correto
-        if (!q.xata_id) {
-            console.error("Erro: Questão sem xata_id:", q);
+        if (!q.id) { // Alterado de xata_id para id
+            console.error("Erro: Questão sem id:", q);
             return;
         }
 
         item.addEventListener('click', () => {
-            console.log("Questão clicada, ID:", q.xata_id);
-            loadQuestionDetail(q.xata_id);
+            console.log("Questão clicada, ID:", q.id);
+            loadQuestionDetail(q.id);
         });
 
         listContainer.appendChild(item);
@@ -94,8 +93,8 @@ async function loadQuestionDetail(questionId) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                columns: ["xata_id", "answer", "is_correct"],
-                filter: { question_id: questionId }, // Filtro correto
+                columns: ["id", "answer", "is_correct"],
+                filter: { question_id: questionId }, // Certificando que está filtrando corretamente
                 page: { size: 10 }
             })
         };
@@ -108,7 +107,7 @@ async function loadQuestionDetail(questionId) {
         const answersData = await answersResponse.json();
         console.log("Respostas carregadas:", answersData);
 
-        currentAnswers = answersData.records || []; // Garante que seja um array
+        currentAnswers = answersData.records || [];
 
         renderQuestionDetail(currentQuestion, currentAnswers);
     } catch (error) {
@@ -145,8 +144,127 @@ function renderQuestionDetail(question, answers) {
         });
     }
 
+            // Botões de ação
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'buttons';
+        
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete';
+            deleteButton.textContent = 'Deletar';
+            deleteButton.onclick = () => deleteQuestion(question.id);
+        
+            const editButton = document.createElement('button');
+            editButton.className = 'edit';
+            editButton.textContent = 'Editar';
+            editButton.onclick = enterEditMode;
+        
+            buttonsDiv.appendChild(deleteButton);
+            buttonsDiv.appendChild(editButton);
+            detailContainer.appendChild(buttonsDiv);
+
     detailContainer.appendChild(alternativesList);
 }
 
+
+
+
+
+
+
 // Inicializa a lista de questões
 fetchQuestionsList();
+
+function enterEditMode() {
+    const detailContainer = document.getElementById('question-detail');
+    detailContainer.innerHTML = `
+        <textarea class="edit-question">${currentQuestion.question}</textarea>
+        <div class="alternatives-edit"></div>
+        <div class="buttons">
+            <button class="save">Salvar</button>
+            <button class="cancel">Cancelar</button>
+        </div>
+    `;
+
+    const alternativesEdit = detailContainer.querySelector('.alternatives-edit');
+    
+    currentAnswers.forEach(answer => {
+        const answerDiv = document.createElement('div');
+        answerDiv.className = 'edit-answer';
+        answerDiv.innerHTML = `
+            <input type="text" value="${answer.answer}">
+            <label>
+                <input type="checkbox" ${answer.is_correct ? 'checked' : ''}>
+                Correta
+            </label>
+            <button class="delete-answer">×</button>
+        `;
+        answerDiv.querySelector('.delete-answer').onclick = () => answerDiv.remove();
+        alternativesEdit.appendChild(answerDiv);
+    });
+
+    detailContainer.querySelector('.save').onclick = saveEdits;
+    detailContainer.querySelector('.cancel').onclick = () => 
+        renderQuestionDetail(currentQuestion, currentAnswers);
+}
+
+async function saveEdits() {
+    try {
+        // Atualizar questão
+        await fetch(`${QUESTION_DATA_ENDPOINT}/${currentQuestion.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                question: document.querySelector('.edit-question').value
+            })
+        });
+
+        // Atualizar respostas
+        const answers = Array.from(document.querySelectorAll('.edit-answer')).map(div => ({
+            id: div.dataset.answerId,
+            answer: div.querySelector('input[type="text"]').value,
+            is_correct: div.querySelector('input[type="checkbox"]').checked
+        }));
+
+        for (const answer of answers) {
+            await fetch(`${ANSWERS_DATA_ENDPOINT}/${answer.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    answer: answer.answer,
+                    is_correct: answer.is_correct
+                })
+            });
+        }
+
+        loadQuestionDetail(currentQuestion.id);
+    } catch (error) {
+        console.error('Erro ao salvar:', error);
+    }
+}
+
+async function deleteQuestion(questionId) {
+    if (confirm('Tem certeza que deseja excluir esta questão?')) {
+        try {
+            const response = await fetch(`${QUESTION_DATA_ENDPOINT}/${questionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                fetchQuestionsList();
+                document.getElementById('question-detail').innerHTML = '<p>Selecione uma questão na lista para ver os detalhes.</p>';
+            }
+        } catch (error) {
+            console.error('Erro ao deletar:', error);
+        }
+    }
+}
