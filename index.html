@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado Bom de Bíblia - Criar Questão</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">Simulado Bom de Bíblia</div>
+        <button class="menu-btn" id="menu-btn">&#9776;</button>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <ul>
+            <li><a href="./pages/ver-questoes">Ver todas as questões</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="form-container">
+            <h2>Criar Questão</h2>
+            <form id="question-form">
+                <div class="form-group">
+                    <label for="question">Pergunta:</label>
+                    <textarea id="question" name="question" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="created_by">Criado por:</label>
+                    <input type="text" id="created_by" name="created_by" required>
+                </div>
+                <fieldset>
+                    <legend>Alternativas</legend>
+                    <div class="alternative">
+                        <input type="radio" id="correct1" name="correct" required>
+                        <label for="answer1">Alternativa 1:</label>
+                        <input type="text" id="answer1" name="answer1" required>
+                    </div>
+                    <div class="alternative">
+                        <input type="radio" id="correct2" name="correct" required>
+                        <label for="answer2">Alternativa 2:</label>
+                        <input type="text" id="answer2" name="answer2" required>
+                    </div>
+                    <div class="alternative">
+                        <input type="radio" id="correct3" name="correct" required>
+                        <label for="answer3">Alternativa 3:</label>
+                        <input type="text" id="answer3" name="answer3" required>
+                    </div>
+                    <div class="alternative">
+                        <input type="radio" id="correct4" name="correct" required>
+                        <label for="answer4">Alternativa 4:</label>
+                        <input type="text" id="answer4" name="answer4" required>
+                    </div>
+                </fieldset>
+                <button type="submit">Salvar Questão</button>
+            </form>
+        </section>
+    </main>
+    <script src="index.js"></script>
+</body>
+
+</html>
