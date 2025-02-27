@@ -4,9 +4,15 @@ const BASE_URL = 'https://jean-ramalho-s-workspace-3rn0k5.us-east-1.xata.sh/db/b
 const QUESTIONS_QUERY_ENDPOINT = `${BASE_URL}/tables/questions/query`;
 const QUESTION_DATA_ENDPOINT = `${BASE_URL}/tables/questions/data`;
 const ANSWERS_QUERY_ENDPOINT = `${BASE_URL}/tables/answers/query`;
+const ANSWERS_DATA_ENDPOINT = `${BASE_URL}/tables/answers/data`; // Necessário para salvar edições
 
 let currentQuestion = null;
 let currentAnswers = [];
+
+// Toggle do menu hamburguer
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('active');
+});
 
 // Carrega a lista de questões
 async function fetchQuestionsList() {
@@ -17,7 +23,7 @@ async function fetchQuestionsList() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            columns: ["id", "created_by", "question"], // Alterado xata_id para id
+            columns: ["id", "created_by", "question"],
             page: { size: 15 }
         })
     };
@@ -34,25 +40,21 @@ async function fetchQuestionsList() {
     }
 }
 
-// Renderiza a lista de questões na sidebar
+// Renderiza a lista de questões na sidebar com visual aprimorada
 function renderQuestionList(questions) {
     const listContainer = document.getElementById('question-list');
     listContainer.innerHTML = '';
 
     questions.forEach(q => {
-        console.log("Questão recebida:", q); // Verifica a estrutura do objeto
-
-        const item = document.createElement('div');
-        item.classList.add('question-item');
-        item.textContent = q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '');
-        
-        if (!q.id) { // Alterado de xata_id para id
+        if (!q.id) {
             console.error("Erro: Questão sem id:", q);
             return;
         }
-
+        const item = document.createElement('div');
+        item.className = 'bg-gray-700 p-3 rounded cursor-pointer hover:bg-gray-600 transition-colors';
+        item.textContent = q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '');
+        
         item.addEventListener('click', () => {
-            console.log("Questão clicada, ID:", q.id);
             loadQuestionDetail(q.id);
         });
 
@@ -94,7 +96,7 @@ async function loadQuestionDetail(questionId) {
             },
             body: JSON.stringify({
                 columns: ["id", "answer", "is_correct"],
-                filter: { question_id: questionId }, // Certificando que está filtrando corretamente
+                filter: { question_id: questionId },
                 page: { size: 10 }
             })
         };
@@ -115,60 +117,63 @@ async function loadQuestionDetail(questionId) {
     }
 }
 
-// Renderiza a questão e suas alternativas na tela
+// Renderiza a questão e suas alternativas com visual aprimorada
 function renderQuestionDetail(question, answers) {
     const detailContainer = document.getElementById('question-detail');
     detailContainer.innerHTML = '';
 
+    // Bloco de "criado por:" alinhado à direita
+    const creatorDiv = document.createElement('div');
+    creatorDiv.className = 'text-right mb-2';
+    creatorDiv.innerHTML = `<span class="text-sm text-gray-400">criado por:</span><br><span class="font-medium">${question.created_by}</span>`;
+    detailContainer.appendChild(creatorDiv);
+
+    // Texto da questão
     const questionTextEl = document.createElement('div');
-    questionTextEl.classList.add('question-text');
+    questionTextEl.className = 'text-xl font-semibold mb-4';
     questionTextEl.textContent = question.question;
     detailContainer.appendChild(questionTextEl);
 
+    // Lista de alternativas
     const alternativesList = document.createElement('ul');
-    alternativesList.classList.add('alternatives');
-
+    alternativesList.className = 'list-none p-0 space-y-2';
     if (answers.length === 0) {
         const noAnswers = document.createElement('p');
         noAnswers.textContent = "Nenhuma alternativa cadastrada para esta questão.";
-        detailContainer.appendChild(noAnswers);
+        alternativesList.appendChild(noAnswers);
     } else {
         answers.forEach(ans => {
             const li = document.createElement('li');
-            li.classList.add('alternative');
-            li.textContent = ans.answer;
+            li.className = 'p-3 rounded';
             if (ans.is_correct) {
-                li.classList.add('correct');
+                li.classList.add('bg-purple-600', 'text-white');
+            } else {
+                li.classList.add('bg-gray-700');
             }
+            li.textContent = ans.answer;
             alternativesList.appendChild(li);
         });
     }
-
-            // Botões de ação
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.className = 'buttons';
-        
-            const deleteButton = document.createElement('button');
-            deleteButton.className = 'delete';
-            deleteButton.textContent = 'Deletar';
-            deleteButton.onclick = () => deleteQuestion(question.id);
-        
-            const editButton = document.createElement('button');
-            editButton.className = 'edit';
-            editButton.textContent = 'Editar';
-            editButton.onclick = enterEditMode;
-        
-            buttonsDiv.appendChild(deleteButton);
-            buttonsDiv.appendChild(editButton);
-            detailContainer.appendChild(buttonsDiv);
-
     detailContainer.appendChild(alternativesList);
+
+    // Botões de ação (deletar e editar) abaixo das alternativas
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.className = 'flex gap-3 mt-4';
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded';
+    deleteButton.textContent = 'Deletar';
+    deleteButton.onclick = () => deleteQuestion(question.id);
+
+    const editButton = document.createElement('button');
+    editButton.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded';
+    editButton.textContent = 'Editar';
+    editButton.onclick = enterEditMode;
+
+    buttonsDiv.appendChild(deleteButton);
+    buttonsDiv.appendChild(editButton);
+    detailContainer.appendChild(buttonsDiv);
 }
-
-
-
-
-
 
 
 // Inicializa a lista de questões
@@ -177,11 +182,11 @@ fetchQuestionsList();
 function enterEditMode() {
     const detailContainer = document.getElementById('question-detail');
     detailContainer.innerHTML = `
-        <textarea class="edit-question">${currentQuestion.question}</textarea>
-        <div class="alternatives-edit"></div>
-        <div class="buttons">
-            <button class="save">Salvar</button>
-            <button class="cancel">Cancelar</button>
+        <textarea class="edit-question w-full p-3 bg-gray-700 text-white rounded mb-4" rows="4">${currentQuestion.question}</textarea>
+        <div class="alternatives-edit space-y-3 mb-4"></div>
+        <div class="flex gap-3">
+            <button class="save bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Salvar</button>
+            <button class="cancel bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">Cancelar</button>
         </div>
     `;
 
@@ -189,14 +194,15 @@ function enterEditMode() {
     
     currentAnswers.forEach(answer => {
         const answerDiv = document.createElement('div');
-        answerDiv.className = 'edit-answer';
+        answerDiv.className = 'edit-answer flex items-center gap-3 p-3 bg-gray-700 rounded';
+        answerDiv.dataset.answerId = answer.id;
         answerDiv.innerHTML = `
-            <input type="text" value="${answer.answer}">
-            <label>
-                <input type="checkbox" ${answer.is_correct ? 'checked' : ''}>
+            <input type="text" value="${answer.answer}" class="flex-1 p-2 bg-gray-600 text-white rounded">
+            <label class="flex items-center gap-1 text-white">
+                <input type="checkbox" ${answer.is_correct ? 'checked' : ''} class="form-checkbox">
                 Correta
             </label>
-            <button class="delete-answer">×</button>
+            <button class="delete-answer text-red-400 text-2xl">&times;</button>
         `;
         answerDiv.querySelector('.delete-answer').onclick = () => answerDiv.remove();
         alternativesEdit.appendChild(answerDiv);

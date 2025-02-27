@@ -1,65 +1,93 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulado Bom de Bíblia - Criar Questão</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Bom de Bíblia - Criar Questão</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Estilo mínimo para a sidebar (classe "active") -->
+  <style>
+    #sidebar.active {
+      left: 0 !important;
+    }
+  </style>
+
+<script src="index.js" defer></script>
+
 </head>
+<body class="bg-gray-900 text-white p-5">
+  <header class="bg-black p-5 text-center relative mb-5">
+    <div class="text-xl font-bold text-purple-600">Simulado Bom de Bíblia</div>
+    <button id="menu-btn" class="text-2xl text-white absolute right-5 top-5 focus:outline-none">&#9776;</button>
+  </header>
 
-<body>
-    <header>
-        <div class="logo">Simulado Bom de Bíblia</div>
-        <button class="menu-btn" id="menu-btn">&#9776;</button>
-    </header>
+  <nav id="sidebar" class="fixed left-[-250px] top-0 w-[250px] h-full bg-gray-800 p-5 transition-all duration-300 z-50">
+    <ul class="space-y-4">
+      <li>
+        <a href="#" class="text-lg hover:text-purple-400">Início</a>
+      </li>
+      <li>
+        <a href="./pages/ver-questoes" class="text-lg hover:text-purple-400">Ver todas as questões</a>
+      </li>
+      <li>
+        <a href="#" class="text-lg hover:text-purple-400">Criar uma nova questão</a>
+      </li>
+    </ul>
+  </nav>
 
-    <nav class="sidebar" id="sidebar">
-        <ul>
-            <li><a href="./pages/ver-questoes">Ver todas as questões</a></li>
-        </ul>
-    </nav>
-
-    <main>
-        <section class="form-container">
-            <h2>Criar Questão</h2>
-            <form id="question-form">
-                <div class="form-group">
-                    <label for="question">Pergunta:</label>
-                    <textarea id="question" name="question" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="created_by">Criado por:</label>
-                    <input type="text" id="created_by" name="created_by" required>
-                </div>
-                <fieldset>
-                    <legend>Alternativas</legend>
-                    <div class="alternative">
-                        <input type="radio" id="correct1" name="correct" required>
-                        <label for="answer1">Alternativa 1:</label>
-                        <input type="text" id="answer1" name="answer1" required>
-                    </div>
-                    <div class="alternative">
-                        <input type="radio" id="correct2" name="correct" required>
-                        <label for="answer2">Alternativa 2:</label>
-                        <input type="text" id="answer2" name="answer2" required>
-                    </div>
-                    <div class="alternative">
-                        <input type="radio" id="correct3" name="correct" required>
-                        <label for="answer3">Alternativa 3:</label>
-                        <input type="text" id="answer3" name="answer3" required>
-                    </div>
-                    <div class="alternative">
-                        <input type="radio" id="correct4" name="correct" required>
-                        <label for="answer4">Alternativa 4:</label>
-                        <input type="text" id="answer4" name="answer4" required>
-                    </div>
-                </fieldset>
-                <button type="submit">Salvar Questão</button>
-            </form>
-        </section>
-    </main>
-    <script src="index.js"></script>
+  <main class="container mx-auto">
+    <section class="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto">
+      <h2 class="text-2xl font-bold text-purple-600 text-center mb-4">Criar Questão</h2>
+      <form id="question-form">
+        <div class="mb-4">
+          <label for="question" class="block mb-2">Pergunta:</label>
+          <textarea id="question" name="question" required class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white"></textarea>
+        </div>
+        <div class="mb-4">
+          <label for="created_by" class="block mb-2">Criado por:</label>
+          <input type="text" id="created_by" name="created_by" required class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white">
+        </div>
+        <fieldset class="border border-gray-600 rounded p-4 mb-4">
+          <legend class="px-2 text-purple-600">Alternativas</legend>
+          
+          <div class="flex flex-col sm:flex-row items-center mb-2">
+            <div class="flex items-center sm:mr-2">
+              <input type="radio" id="correct1" name="correct" required class="mr-2">
+              <label for="answer1" class="text-white">Alternativa 1:</label>
+            </div>
+            <input type="text" id="answer1" name="answer1" required class="flex-1 p-2 border border-gray-600 rounded bg-gray-700 text-white">
+          </div>
+          
+          <div class="flex flex-col sm:flex-row items-center mb-2">
+            <div class="flex items-center sm:mr-2">
+              <input type="radio" id="correct2" name="correct" required class="mr-2">
+              <label for="answer2" class="text-white">Alternativa 2:</label>
+            </div>
+            <input type="text" id="answer2" name="answer2" required class="flex-1 p-2 border border-gray-600 rounded bg-gray-700 text-white">
+          </div>
+          
+          <div class="flex flex-col sm:flex-row items-center mb-2">
+            <div class="flex items-center sm:mr-2">
+              <input type="radio" id="correct3" name="correct" required class="mr-2">
+              <label for="answer3" class="text-white">Alternativa 3:</label>
+            </div>
+            <input type="text" id="answer3" name="answer3" required class="flex-1 p-2 border border-gray-600 rounded bg-gray-700 text-white">
+          </div>
+          
+          <div class="flex flex-col sm:flex-row items-center mb-2">
+            <div class="flex items-center sm:mr-2">
+              <input type="radio" id="correct4" name="correct" required class="mr-2">
+              <label for="answer4" class="text-white">Alternativa 4:</label>
+            </div>
+            <input type="text" id="answer4" name="answer4" required class="flex-1 p-2 border border-gray-600 rounded bg-gray-700 text-white">
+          </div>
+        </fieldset>
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded">
+          Salvar Questão
+        </button>
+      </form>
+    </section>
+  </main>
 </body>
-
 </html>
