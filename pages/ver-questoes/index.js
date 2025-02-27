@@ -214,63 +214,119 @@ function enterEditMode() {
 }
 
 async function saveEdits() {
+    console.log("saveEdits chamado");
     try {
-        // Atualizar questão
-        await fetch(`${QUESTION_DATA_ENDPOINT}/${currentQuestion.id}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                question: document.querySelector('.edit-question').value
-            })
+      // Obtém o texto atualizado da questão
+      const updatedQuestionText = document.querySelector('.edit-question').value;
+      console.log("Texto da questão atualizado:", updatedQuestionText);
+      
+      // Atualiza a questão
+      const questionResponse = await fetch(`${QUESTION_DATA_ENDPOINT}/${currentQuestion.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question: updatedQuestionText })
+      });
+      if (!questionResponse.ok) {
+        const errorText = await questionResponse.text();
+        throw new Error(`Erro ao atualizar questão: ${errorText}`);
+      }
+      console.log("Questão atualizada com sucesso");
+      
+      // Atualiza as respostas
+      const answers = Array.from(document.querySelectorAll('.edit-answer')).map(div => ({
+        id: div.dataset.answerId,
+        answer: div.querySelector('input[type="text"]').value,
+        is_correct: div.querySelector('input[type="checkbox"]').checked
+      }));
+      console.log("Respostas para atualizar:", answers);
+      
+      for (const answer of answers) {
+        const answerResponse = await fetch(`${ANSWERS_DATA_ENDPOINT}/${answer.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            answer: answer.answer,
+            is_correct: answer.is_correct
+          })
         });
-
-        // Atualizar respostas
-        const answers = Array.from(document.querySelectorAll('.edit-answer')).map(div => ({
-            id: div.dataset.answerId,
-            answer: div.querySelector('input[type="text"]').value,
-            is_correct: div.querySelector('input[type="checkbox"]').checked
-        }));
-
-        for (const answer of answers) {
-            await fetch(`${ANSWERS_DATA_ENDPOINT}/${answer.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    answer: answer.answer,
-                    is_correct: answer.is_correct
-                })
-            });
+        if (!answerResponse.ok) {
+          const errorText = await answerResponse.text();
+          throw new Error(`Erro ao atualizar resposta ${answer.id}: ${errorText}`);
         }
-
-        loadQuestionDetail(currentQuestion.id);
+        console.log(`Resposta ${answer.id} atualizada`);
+      }
+      
+      // Recarrega os detalhes da questão após a atualização
+      loadQuestionDetail(currentQuestion.id);
     } catch (error) {
-        console.error('Erro ao salvar:', error);
+      console.error('Erro ao salvar:', error);
     }
-}
+  }
+  
 
 async function deleteQuestion(questionId) {
+    console.log('deleteQuestion called with id:', questionId);
     if (confirm('Tem certeza que deseja excluir esta questão?')) {
-        try {
-            const response = await fetch(`${QUESTION_DATA_ENDPOINT}/${questionId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                fetchQuestionsList();
-                document.getElementById('question-detail').innerHTML = '<p>Selecione uma questão na lista para ver os detalhes.</p>';
-            }
-        } catch (error) {
-            console.error('Erro ao deletar:', error);
+      try {
+        // Primeiro: buscar as respostas associadas à questão
+        const answersOptions = {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            columns: ["id"],
+            filter: { question_id: questionId },
+            page: { size: 50 }
+          })
+        };
+  
+        const answersResponse = await fetch(ANSWERS_QUERY_ENDPOINT, answersOptions);
+        if (!answersResponse.ok) {
+          throw new Error(`Erro ao buscar respostas: ${answersResponse.statusText}`);
         }
+        const answersData = await answersResponse.json();
+        const answersRecords = answersData.records || [];
+        
+        // Segundo: excluir cada resposta associada
+        for (const answer of answersRecords) {
+          const deleteAnswerResponse = await fetch(`${ANSWERS_DATA_ENDPOINT}/${answer.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`
+            }
+          });
+          if (!deleteAnswerResponse.ok) {
+            const errorText = await deleteAnswerResponse.text();
+            throw new Error(`Erro ao deletar resposta ${answer.id}: ${errorText}`);
+          }
+        }
+        
+        // Terceiro: excluir a questão
+        const deleteQuestionResponse = await fetch(`${QUESTION_DATA_ENDPOINT}/${questionId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`
+          }
+        });
+        if (!deleteQuestionResponse.ok) {
+          const errorText = await deleteQuestionResponse.text();
+          throw new Error(`Erro ao deletar questão: ${deleteQuestionResponse.statusText}: ${errorText}`);
+        }
+        
+        // Atualiza a lista e limpa o quadro de detalhes
+        fetchQuestionsList();
+        document.getElementById('question-detail').innerHTML = '<p>Selecione uma questão na lista para ver os detalhes.</p>';
+      } catch (error) {
+        console.error('Erro ao deletar:', error);
+      }
     }
-}
+  }
+  
