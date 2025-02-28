@@ -4,49 +4,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ver Questões - Simulado Bom de Bíblia</title>
-  <!-- Tailwind via CDN -->
+  <!-- Importa o Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- CSS mínimo para sidebar (classe "active") -->
   <style>
-    #sidebar.active {
-      left: 0 !important;
-    }
+    /* Estilo para manter a sidebar posicionada corretamente quando ativa */
+    #sidebar.active { left: 0 !important; }
+    /* Limita a altura do dropdown mobile */
+    #mobile-question-list { max-height: 70vh; }
   </style>
-  <!-- Carrega o script com defer para garantir que o DOM já esteja carregado -->
+  <!-- Carrega o JavaScript com defer para garantir que o DOM esteja pronto -->
   <script src="index.js" defer></script>
 </head>
 <body class="bg-gray-900 text-white">
   <!-- Cabeçalho -->
   <header class="bg-black p-5 text-center relative mb-5">
     <div class="text-xl font-bold text-purple-600">Simulado Bom de Bíblia</div>
+    <!-- Botão do menu hamburguer para desktop -->
     <button id="menu-btn" class="text-2xl text-white absolute right-5 top-5 focus:outline-none">&#9776;</button>
   </header>
 
-  <!-- Sidebar do menu hamburguer -->
+  <!-- Sidebar do menu hamburguer (desktop) -->
   <nav id="sidebar" class="fixed left-[-250px] top-0 w-[250px] h-full bg-gray-800 p-5 transition-all duration-300 z-50">
     <ul class="space-y-4">
-      <li>
-        <a href="../../index.html" class="text-lg hover:text-purple-400">Início</a>
-      </li>
-      <li>
-        <a href="#" class="text-lg hover:text-purple-400">Ver todas as questões</a>
-      </li>
-      <li>
-        <a href="../../index.html" class="text-lg hover:text-purple-400">Criar uma nova questão</a>
-      </li>
+      <li><a href="../../index.html" class="text-lg hover:text-purple-400">Início</a></li>
+      <li><a href="#" class="text-lg hover:text-purple-400">Ver todas as questões</a></li>
+      <li><a href="../../index.html" class="text-lg hover:text-purple-400">Criar uma nova questão</a></li>
     </ul>
   </nav>
 
-  <!-- Container principal -->
+  <!-- Dropdown Mobile para exibição da lista de questões -->
+  <div class="md:hidden p-4 bg-gray-800 relative">
+    <button id="mobile-dropdown-btn" class="w-full bg-gray-700 text-white p-3 rounded-lg">
+      Mostrar Questões ▼
+    </button>
+    <!-- Este container ficará visível ao clicar no botão -->
+    <div id="mobile-question-list" class="hidden absolute left-0 right-0 bg-gray-800 mt-2 z-50 overflow-y-auto shadow-xl">
+      <!-- A lista de questões mobile será injetada aqui via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Container principal: Sidebar para desktop e área de detalhes -->
   <div class="flex flex-col md:flex-row min-h-[calc(100vh-80px)]">
-    <!-- Sidebar com a lista de questões -->
-    <aside class="bg-gray-800 p-5 md:w-1/4 w-full overflow-y-auto">
+    <!-- Sidebar fixa para desktop -->
+    <aside class="bg-gray-800 p-5 md:w-1/4 hidden md:block overflow-y-auto">
       <h2 class="text-xl font-bold text-purple-600 mb-4">Questões</h2>
       <div id="question-list" class="flex flex-col gap-3">
-        <!-- Lista de questões gerada via JS -->
+        <!-- A lista de questões desktop será injetada aqui via JavaScript -->
       </div>
     </aside>
-    <!-- Área de conteúdo com os detalhes da questão -->
+
+    <!-- Área de conteúdo principal para exibir detalhes da questão selecionada -->
     <main class="flex-1 p-5">
       <div id="question-detail" class="bg-gray-800 p-5 rounded-lg">
         <p>Selecione uma questão na lista para ver os detalhes.</p>
