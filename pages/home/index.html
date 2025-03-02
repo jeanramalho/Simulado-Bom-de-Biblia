@@ -18,16 +18,16 @@
 </head>
 <body class="bg-gray-900 text-white">
   <!-- Cabeçalho -->
-  <header class="bg-gray-800 p-5 text-center relative h-16 mb-5">
+  <header class="bg-gray-800 p-5 text-center relative mb-5">
+
+    <div class="w-full flex items-center justify-center p-2 pt-10">
+      <img src="../../assets/logo.png" alt="Simulado Bom de Biblia" class="w-3/5 md:w-1/5 w-min-2/4">
+    </div>
     
     <!-- Botão do menu hamburguer -->
     <button id="menu-btn" class="text-2xl text-white absolute right-5 top-5 focus:outline-none">&#9776;</button>
   </header>
-
-  <div class="w-full flex items-center justify-center p-4">
-    <img src="../../assets/logo.png" alt="Simulado Bom de Biblia" class="w-3/5 md:w-1/5 w-min-2/4">
-  </div>
-
+ 
   <!-- Sidebar de Navegação -->
   <nav id="sidebar" class="fixed left-[-250px] top-0 w-[250px] h-full bg-gray-800 p-5 transition-all duration-300 z-50">
     <ul class="space-y-4">
@@ -40,11 +40,11 @@
 
   <!-- Conteúdo Principal -->
   <main class="container mx-auto p-5">
-    <section class="bg-gray-800 p-6 rounded-lg max-w-4xl mx-auto">
+    <section class="bg-gray-800 p-6 rounded-lg max-w-2xl mx-auto">
       <!-- Grid de cards: em mobile 1 coluna, em desktop 3 colunas, com gap reduzido -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
         <!-- Card 1: Ver Questões -->
-        <a href="ver-questoes.html" class="block bg-gray-700 p-6 rounded-lg transform transition duration-300 hover:scale-105 active:scale-105 md:h-80 max-w-xs mx-auto">
+        <a href="../ver-questoes/index.html" class="block bg-gray-700 p-6 rounded-lg transform transition duration-300 hover:scale-105 active:scale-105 md:h-80 max-w-xs mx-auto">
           <div class="flex flex-col items-center justify-end h-full pb-2">
             <!-- Ícone SVG (Clipboard List) -->
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,7 +55,7 @@
         </a>
 
         <!-- Card 2: Criar Questão -->
-        <a href="criar-questao.html" class="block bg-gray-700 p-6 rounded-lg transform transition duration-300 hover:scale-105 active:scale-105 md:h-80 max-w-xs mx-auto">
+        <a href="../criar-questoes/index.html" class="block bg-gray-700 p-6 rounded-lg transform transition duration-300 hover:scale-105 active:scale-105 md:h-80 max-w-xs mx-auto">
           <div class="flex flex-col items-center justify-end h-full pb-2">
             <!-- Ícone SVG (Pencil) -->
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,7 +66,7 @@
         </a>
 
         <!-- Card 3: Fazer Simulado -->
-        <a href="simulado.html" class="block bg-gray-700 p-6 rounded-lg transform transition duration-300 hover:scale-105 active:scale-105 md:h-80 max-w-xs mx-auto">
+        <a href="../simulado/index.html" class="block bg-gray-700 p-6 rounded-lg transform transition duration-300 hover:scale-105 active:scale-105 md:h-80 max-w-xs mx-auto">
           <div class="flex flex-col items-center justify-end h-full pb-2">
             <!-- Ícone SVG (Play) -->
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
