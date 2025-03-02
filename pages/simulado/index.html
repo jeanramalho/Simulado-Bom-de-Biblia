@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado - Criar Simulado - Simulado Bom de Bíblia</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Mantém a sidebar posicionada quando ativa */
+    #sidebar.active { left: 0 !important; }
+  </style>
+  <!-- Favicon mínimo para evitar erro 404 -->
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <!-- Certifique-se de que simulado.js esteja na mesma pasta deste arquivo -->
+  <script src="index.js" type="text/javascript" defer></script>
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Cabeçalho -->
+  <header class="bg-black p-5 text-center relative mb-5">
+    <div class="text-xl font-bold text-purple-600">Simulado Bom de Bíblia</div>
+    <!-- Botão do menu hamburguer -->
+    <button id="menu-btn" class="text-2xl text-white absolute right-5 top-5 focus:outline-none">&#9776;</button>
+  </header>
+
+  <!-- Sidebar para navegação -->
+  <nav id="sidebar" class="fixed left-[-250px] top-0 w-[250px] h-full bg-gray-800 p-5 transition-all duration-300 z-50">
+    <ul class="space-y-4">
+      <li><a href="../../index.html" class="text-lg hover:text-purple-400">Início</a></li>
+      <li><a href="./ver-questoes.html" class="text-lg hover:text-purple-400">Ver Questões</a></li>
+      <li><a href="./criar-questao.html" class="text-lg hover:text-purple-400">Criar Questão</a></li>
+      <!-- Outras páginas se necessário -->
+    </ul>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="container mx-auto p-5">
+    <!-- Tela inicial para seleção do simulado -->
+    <section id="simulado-selection" class="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto">
+      <h2 class="text-2xl font-bold text-purple-600 text-center mb-4">Criar Simulado</h2>
+      <div class="mb-4">
+        <p class="mb-2">Selecione a quantidade de questões:</p>
+        <div class="flex justify-around">
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="simulado-qty" value="5" class="form-radio text-purple-600" checked>
+            <span>5 Questões</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="simulado-qty" value="10" class="form-radio text-purple-600">
+            <span>10 Questões</span>
+          </label>
+        </div>
+      </div>
+      <button id="criar-simulado-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded">
+        Criar Simulado
+      </button>
+    </section>
+
+    <!-- Tela do simulado (quiz) – inicialmente oculta -->
+    <section id="simulado-quiz" class="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto mt-6 hidden">
+      <div id="simulado-content">
+        <!-- Aqui serão carregadas as perguntas e alternativas -->
+      </div>
+      <button id="responder-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded mt-4">
+        Responder
+      </button>
+    </section>
+
+    <!-- Tela final para exibir a pontuação – inicialmente oculta -->
+    <section id="simulado-final" class="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto mt-6 hidden text-center">
+      <h2 class="text-2xl font-bold text-purple-600 mb-4">Simulado Finalizado!</h2>
+      <p id="final-score" class="text-xl"></p>
+    </section>
+  </main>
+</body>
+</html>
