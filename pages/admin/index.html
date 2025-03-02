@@ -6,6 +6,8 @@
   <title>Gerenciar Usuários - Simulado Bom de Bíblia</title>
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- <script src="../../security/auth.js" defer></script> -->
+  <!-- <script src="../../security/auth.js" defer></script> -->
   <style>
     #sidebar.active { left: 0 !important; }
   </style>
@@ -18,12 +20,12 @@
   <header class="bg-black p-5 text-center relative mb-5">
     <div class="text-xl font-bold text-purple-600">Simulado Bom de Bíblia</div>
     <button id="menu-btn" class="text-2xl text-white absolute right-5 top-5 focus:outline-none">&#9776;</button>
-    <div id="user-info" class="absolute right-5 top-5 flex items-center space-x-2 hidden">
+    <div id="user-info" class="absolute left-5 top-5 flex items-center space-x-2 hidden">
       <div id="avatar" class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer relative">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
         </svg>
-        <div id="user-dropdown" class="absolute right-0 mt-10 w-40 bg-gray-800 border border-gray-600 rounded shadow-lg hidden">
+        <div id="user-dropdown" class="absolute left-5 mt-10 w-40 bg-gray-800 border border-gray-600 rounded shadow-lg hidden">
           <ul>
             <!-- Opção de Gerenciar Usuários não precisa aparecer aqui, pois estamos na página de CRUD -->
             <li id="logout-option" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Sair</li>
