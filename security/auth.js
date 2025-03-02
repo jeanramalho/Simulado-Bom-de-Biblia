@@ -78,7 +78,7 @@ function checkSession() {
     // Se for admin, adiciona evento para Gerenciar Usuários
     if (user.adm) {
       document.getElementById("admin-option").addEventListener("click", () => {
-        window.location.href = "../../pages/admin/users.html";
+        window.location.href = "../admin/index.html";
       });
     }
   }
