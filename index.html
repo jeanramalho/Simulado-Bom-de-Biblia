@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Simulado Bom de Bíblia</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Se desejar, inclua algum estilo extra */
+  </style>
+  <!-- Favicon mínimo -->
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <!-- Carrega o script de login -->
+  <script src="index.js" defer></script>
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Cabeçalho simples (não há menu ainda pois não está logado) -->
+  <header class="bg-black p-5 text-center mb-5">
+    <div class="text-xl font-bold text-purple-600">Simulado Bom de Bíblia</div>
+  </header>
+  <!-- Container do formulário de login -->
+  <main class="container mx-auto flex justify-center items-center">
+    <div class="bg-gray-800 p-6 rounded-lg max-w-sm w-full">
+      <h2 class="text-2xl font-bold text-purple-600 text-center mb-4">Login</h2>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label for="username" class="block mb-1">Username:</label>
+          <input type="text" id="username" name="username" required 
+            class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white">
+        </div>
+        <div>
+          <label for="password" class="block mb-1">Senha:</label>
+          <div class="relative">
+            <input type="password" id="password" name="password" required 
+              class="w-full p-2 pr-10 rounded bg-gray-700 border border-gray-600 text-white">
+            <!-- Botão para mostrar/ocultar senha -->
+            <button type="button" id="toggle-password" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <!-- Ícone simples (olho) -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="login-error" class="text-red-400 text-center"></div>
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded">
+          Entrar
+        </button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

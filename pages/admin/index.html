@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Usuários - Simulado Bom de Bíblia</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    #sidebar.active { left: 0 !important; }
+  </style>
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <!-- Script do CRUD de usuários -->
+  <script src="index.js" defer></script>
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Cabeçalho com avatar dropdown -->
+  <header class="bg-black p-5 text-center relative mb-5">
+    <div class="text-xl font-bold text-purple-600">Simulado Bom de Bíblia</div>
+    <button id="menu-btn" class="text-2xl text-white absolute right-5 top-5 focus:outline-none">&#9776;</button>
+    <div id="user-info" class="absolute right-5 top-5 flex items-center space-x-2 hidden">
+      <div id="avatar" class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer relative">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+        </svg>
+        <div id="user-dropdown" class="absolute right-0 mt-10 w-40 bg-gray-800 border border-gray-600 rounded shadow-lg hidden">
+          <ul>
+            <!-- Opção de Gerenciar Usuários não precisa aparecer aqui, pois estamos na página de CRUD -->
+            <li id="logout-option" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Sair</li>
+          </ul>
+        </div>
+      </div>
+      <div id="user-name" class="cursor-pointer hidden"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar de Navegação -->
+  <nav id="sidebar" class="fixed left-[-250px] top-0 w-[250px] h-full bg-gray-800 p-5 transition-all duration-300 z-50">
+    <ul class="space-y-4">
+      <li><a href="../home/index.html" class="text-lg hover:text-purple-400">Início</a></li>
+      <li><a href="../ver-questoes.html" class="text-lg hover:text-purple-400">Ver Questões</a></li>
+      <li><a href="../criar-questao.html" class="text-lg hover:text-purple-400">Criar Questão</a></li>
+      <li><a href="../simulado.html" class="text-lg hover:text-purple-400">Fazer Simulado</a></li>
+    </ul>
+  </nav>
+
+  <!-- Conteúdo Principal: CRUD de Usuários -->
+  <main class="container mx-auto p-5">
+    <h2 class="text-3xl font-bold text-purple-600 mb-4 text-center">Gerenciar Usuários</h2>
+    <!-- Formulário para criar/editar usuário -->
+    <section id="user-form-section" class="bg-gray-800 p-4 rounded mb-6 max-w-xl mx-auto">
+      <h3 id="form-title" class="text-2xl font-medium text-purple-600 mb-4">Novo Usuário</h3>
+      <form id="user-form" class="space-y-4">
+        <div>
+          <label for="nome" class="block mb-1">Nome:</label>
+          <input type="text" id="nome" name="nome" required 
+            class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white">
+        </div>
+        <div>
+          <label for="username" class="block mb-1">Username:</label>
+          <input type="text" id="username" name="username" required 
+            class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white">
+        </div>
+        <div>
+          <label for="password" class="block mb-1">Senha:</label>
+          <input type="password" id="password" name="password" required 
+            class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white">
+        </div>
+        <div>
+          <p class="mb-1">É admin?</p>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input type="radio" name="adm" value="true" class="form-radio text-purple-600" required>
+              <span class="ml-1">Sim</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="adm" value="false" class="form-radio text-purple-600" required>
+              <span class="ml-1">Não</span>
+            </label>
+          </div>
+        </div>
+        <div id="user-form-error" class="text-red-400 text-center"></div>
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded">
+          Salvar Usuário
+        </button>
+      </form>
+    </section>
+    <!-- Tabela de usuários -->
+    <section id="users-list-section" class="bg-gray-800 p-4 rounded max-w-4xl mx-auto">
+      <h3 class="text-2xl font-medium text-purple-600 mb-4">Usuários Cadastrados</h3>
+      <div id="users-list">
+        <!-- Tabela ou lista de usuários será injetada via JavaScript -->
+      </div>
+    </section>
+  </main>
+</body>
+</html>
