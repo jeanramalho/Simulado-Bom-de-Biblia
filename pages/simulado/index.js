@@ -167,3 +167,10 @@ document.getElementById('responder-btn').addEventListener('click', () => {
     document.getElementById('simulado-final').classList.remove('hidden');
   }
 });
+
+// --- Evento do botão "Criar um novo simulado" ---
+document.getElementById('novo-simulado-btn').addEventListener('click', () => {
+  // Retorna à tela inicial do simulado
+  document.getElementById('simulado-final').classList.add('hidden');
+  document.getElementById('simulado-selection').classList.remove('hidden');
+});
