@@ -17,14 +17,25 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
     alternatives.push({ answer: answerText, is_correct: isCorrect });
   }
 
-  // Valida se exatamente uma alternativa foi marcada como correta
-  const correctCount = alternatives.filter(alt => alt.is_correct).length;
+  // Filtra apenas alternativas não vazias
+  const validAlternatives = alternatives.filter(alt => alt.answer !== '');
+  
+  // Validações
+  if (validAlternatives.length < 2) {
+    alert("É necessário pelo menos 2 alternativas válidas.");
+    return;
+  }
+
+  const correctCount = validAlternatives.filter(alt => alt.is_correct).length;
   if (correctCount !== 1) {
     alert("Selecione exatamente uma alternativa correta.");
     return;
   }
 
   try {
+    console.log("Iniciando criação da questão...");
+    console.log("Alternativas válidas:", validAlternatives);
+    
     // Cria a questão na tabela "questions"
     const questionResponse = await fetch(QUESTIONS_ENDPOINT, {
       method: 'POST',
@@ -48,10 +59,13 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
     if (!questionId) {
       throw new Error("Não foi possível obter o ID da questão.");
     }
-    console.log("Questão criada:", questionData);
+    console.log("Questão criada com ID:", questionId);
 
-    // Cria cada alternativa na tabela "answers"
-    for (const alt of alternatives) {
+    // Cria cada alternativa válida na tabela "answers"
+    console.log(`Criando ${validAlternatives.length} alternativas...`);
+    for (const alt of validAlternatives) {
+      console.log("Salvando alternativa:", alt);
+      
       const answerResponse = await fetch(ANSWERS_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -69,9 +83,11 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
         const errorText = await answerResponse.text();
         throw new Error('Erro ao salvar as respostas: ' + errorText);
       }
+      
+      console.log("Alternativa salva com sucesso");
     }
 
-    alert('Questão e respostas salvas com sucesso!');
+    alert(`Questão salva com sucesso! ${validAlternatives.length} alternativa(s) criada(s).`);
     document.getElementById('question-form').reset();
   } catch (error) {
     console.error(error);

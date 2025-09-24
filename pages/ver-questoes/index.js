@@ -64,6 +64,7 @@ function createQuestionCard(question) {
   `;
   
   card.addEventListener('click', () => {
+    console.log("Card clicado, ID da questão:", question.id);
     loadQuestionDetail(question.id);
   });
   
@@ -239,9 +240,11 @@ async function loadQuestionDetail(questionId) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        columns: ["id", "answer", "is_correct"],
-        filter: { question_id: questionId },
-        page: { size: 10 }
+        columns: ["id", "answer", "is_correct", "question_id"],
+        filter: { 
+          "question_id": { "$is": questionId }
+        },
+        page: { size: 50 }
       })
     };
 
@@ -252,7 +255,9 @@ async function loadQuestionDetail(questionId) {
     
     const answersData = await answersResponse.json();
     console.log("Respostas carregadas:", answersData);
+    console.log("Question ID usado no filtro:", questionId);
     currentAnswers = answersData.records || [];
+    console.log("Número de alternativas encontradas:", currentAnswers.length);
 
     // Renderiza os detalhes da questão e alternativas no modal
     renderQuestionDetailInModal(currentQuestion, currentAnswers);
@@ -283,9 +288,13 @@ function renderQuestionDetailInModal(question, answers) {
   const alternativesList = document.createElement('ul');
   alternativesList.className = 'list-none p-0 space-y-3 mb-6';
   if (answers.length === 0) {
-    const noAnswers = document.createElement('p');
-    noAnswers.className = 'text-gray-400 text-center py-4';
-    noAnswers.textContent = "Nenhuma alternativa cadastrada para esta questão.";
+    const noAnswers = document.createElement('div');
+    noAnswers.className = 'text-gray-400 text-center py-6 bg-gray-700 rounded-lg border border-gray-600';
+    noAnswers.innerHTML = `
+      <div class="text-4xl mb-2">📝</div>
+      <p class="text-sm">Nenhuma alternativa cadastrada para esta questão.</p>
+      <p class="text-xs mt-1">Use o botão "Editar" para adicionar alternativas.</p>
+    `;
     alternativesList.appendChild(noAnswers);
   } else {
     answers.forEach((ans, index) => {
@@ -312,20 +321,35 @@ function renderQuestionDetailInModal(question, answers) {
   const deleteButton = document.createElement('button');
   deleteButton.className = 'bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors';
   deleteButton.textContent = 'Deletar';
-  deleteButton.onclick = () => {
+  deleteButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (confirm('Tem certeza que deseja excluir esta questão?')) {
       deleteQuestion(question.id);
       closeModal();
     }
-  };
+  });
 
   const editButton = document.createElement('button');
   editButton.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors';
   editButton.textContent = 'Editar';
-  editButton.onclick = () => {
-    closeModal();
-    enterEditModeInModal(question, answers);
-  };
+  editButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Botão editar clicado!");
+    console.log("Question:", question);
+    console.log("Answers:", answers);
+    
+    // Garante que o modal está aberto
+    if (document.getElementById('question-modal').classList.contains('hidden')) {
+      openModal();
+    }
+    
+    // Aguarda um pouco para garantir que o modal está visível
+    setTimeout(() => {
+      enterEditModeInModal(question, answers);
+    }, 100);
+  });
 
   buttonsDiv.appendChild(editButton);
   buttonsDiv.appendChild(deleteButton);
@@ -394,7 +418,21 @@ function renderQuestionDetail(question, answers) {
 
 // --- Função para Entrar no Modo de Edição da Questão no Modal ---
 function enterEditModeInModal(question, answers) {
+  console.log("enterEditModeInModal chamada com:", { question, answers });
   const modalContent = document.getElementById('modal-content');
+  console.log("Modal content element:", modalContent);
+  
+  if (!modalContent) {
+    console.error("Modal content não encontrado!");
+    return;
+  }
+  
+  // Garante que o modal está aberto
+  const modal = document.getElementById('question-modal');
+  if (modal.classList.contains('hidden')) {
+    console.log("Abrindo modal...");
+    openModal();
+  }
   modalContent.innerHTML = `
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-300 mb-2">Questão:</label>
@@ -412,12 +450,20 @@ function enterEditModeInModal(question, answers) {
 
   const alternativesEdit = modalContent.querySelector('.alternatives-edit');
   
-  answers.forEach(answer => {
+  // Se não há alternativas, cria pelo menos 4 campos vazios
+  const answersToShow = answers.length > 0 ? answers : [
+    { id: 'new_1', answer: '', is_correct: false },
+    { id: 'new_2', answer: '', is_correct: false },
+    { id: 'new_3', answer: '', is_correct: false },
+    { id: 'new_4', answer: '', is_correct: false }
+  ];
+  
+  answersToShow.forEach(answer => {
     const answerDiv = document.createElement('div');
     answerDiv.className = 'edit-answer flex items-center gap-3 p-3 bg-gray-700 rounded border border-gray-600';
     answerDiv.dataset.answerId = answer.id;
     answerDiv.innerHTML = `
-      <input type="text" value="${answer.answer}" class="flex-1 p-2 bg-gray-600 text-white rounded border border-gray-500">
+      <input type="text" value="${answer.answer}" placeholder="Digite a alternativa..." class="flex-1 p-2 bg-gray-600 text-white rounded border border-gray-500">
       <label class="flex items-center gap-1 text-white">
         <input type="checkbox" ${answer.is_correct ? 'checked' : ''} class="form-checkbox text-purple-600">
         <span class="text-sm">Correta</span>
@@ -427,10 +473,31 @@ function enterEditModeInModal(question, answers) {
     answerDiv.querySelector('.delete-answer').onclick = () => answerDiv.remove();
     alternativesEdit.appendChild(answerDiv);
   });
+  
+  // Adiciona botão para adicionar nova alternativa
+  const addAnswerBtn = document.createElement('button');
+  addAnswerBtn.className = 'w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors';
+  addAnswerBtn.innerHTML = '+ Adicionar Alternativa';
+  addAnswerBtn.onclick = () => {
+    const newAnswerDiv = document.createElement('div');
+    newAnswerDiv.className = 'edit-answer flex items-center gap-3 p-3 bg-gray-700 rounded border border-gray-600';
+    newAnswerDiv.dataset.answerId = `new_${Date.now()}`;
+    newAnswerDiv.innerHTML = `
+      <input type="text" placeholder="Digite a alternativa..." class="flex-1 p-2 bg-gray-600 text-white rounded border border-gray-500">
+      <label class="flex items-center gap-1 text-white">
+        <input type="checkbox" class="form-checkbox text-purple-600">
+        <span class="text-sm">Correta</span>
+      </label>
+      <button class="delete-answer text-red-400 text-2xl hover:text-red-300">&times;</button>
+    `;
+    newAnswerDiv.querySelector('.delete-answer').onclick = () => newAnswerDiv.remove();
+    alternativesEdit.insertBefore(newAnswerDiv, addAnswerBtn);
+  };
+  alternativesEdit.appendChild(addAnswerBtn);
 
-  modalContent.querySelector('.save').onclick = saveEdits;
-  modalContent.querySelector('.cancel').onclick = () => 
-    renderQuestionDetailInModal(currentQuestion, currentAnswers);
+  modalContent.querySelector('.save').addEventListener('click', saveEdits);
+  modalContent.querySelector('.cancel').addEventListener('click', () => 
+    renderQuestionDetailInModal(currentQuestion, currentAnswers));
 }
 
 // --- Função para Entrar no Modo de Edição da Questão (versão antiga para compatibilidade) ---
@@ -493,15 +560,21 @@ async function saveEdits() {
     }
     console.log("Questão atualizada com sucesso");
     
-    // Atualiza cada uma das alternativas
+    // Processa as alternativas (existentes e novas)
     const answers = Array.from(document.querySelectorAll('.edit-answer')).map(div => ({
       id: div.dataset.answerId,
-      answer: div.querySelector('input[type="text"]').value,
+      answer: div.querySelector('input[type="text"]').value.trim(),
       is_correct: div.querySelector('input[type="checkbox"]').checked
-    }));
-    console.log("Respostas para atualizar:", answers);
+    })).filter(answer => answer.answer !== ''); // Remove alternativas vazias
     
-    for (const answer of answers) {
+    console.log("Respostas para processar:", answers);
+    
+    // Separa alternativas existentes das novas
+    const existingAnswers = answers.filter(answer => !answer.id.startsWith('new_'));
+    const newAnswers = answers.filter(answer => answer.id.startsWith('new_'));
+    
+    // Atualiza alternativas existentes
+    for (const answer of existingAnswers) {
       const answerResponse = await fetch(`${ANSWERS_DATA_ENDPOINT}/${answer.id}`, {
         method: 'PATCH',
         headers: {
@@ -520,10 +593,53 @@ async function saveEdits() {
       console.log(`Resposta ${answer.id} atualizada`);
     }
     
+    // Cria novas alternativas
+    for (const answer of newAnswers) {
+      const answerResponse = await fetch(ANSWERS_DATA_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          question_id: currentQuestion.id,
+          answer: answer.answer,
+          is_correct: answer.is_correct
+        })
+      });
+      if (!answerResponse.ok) {
+        const errorText = await answerResponse.text();
+        throw new Error(`Erro ao criar nova resposta: ${errorText}`);
+      }
+      console.log(`Nova resposta criada`);
+    }
+    
+    // Mostra mensagem de sucesso
+    const successMsg = document.createElement('div');
+    successMsg.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50';
+    successMsg.textContent = 'Questão salva com sucesso!';
+    document.body.appendChild(successMsg);
+    
+    // Remove a mensagem após 3 segundos
+    setTimeout(() => {
+      successMsg.remove();
+    }, 3000);
+    
     // Recarrega os detalhes da questão atualizada no modal
     loadQuestionDetail(currentQuestion.id);
   } catch (error) {
     console.error('Erro ao salvar:', error);
+    
+    // Mostra mensagem de erro
+    const errorMsg = document.createElement('div');
+    errorMsg.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow-lg z-50';
+    errorMsg.textContent = 'Erro ao salvar questão. Tente novamente.';
+    document.body.appendChild(errorMsg);
+    
+    // Remove a mensagem após 5 segundos
+    setTimeout(() => {
+      errorMsg.remove();
+    }, 5000);
   }
 }
 
