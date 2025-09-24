@@ -10,8 +10,36 @@
   <style>
     /* Estilo para manter a sidebar posicionada corretamente quando ativa */
     #sidebar.active { left: 0 !important; }
-    /* Limita a altura do dropdown mobile */
-    #mobile-question-list { max-height: 70vh; }
+    
+    /* Estilos para os cards de questões */
+    .question-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .question-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Estilos para paginação */
+    .pagination-btn {
+      transition: all 0.2s ease;
+    }
+    
+    .pagination-btn:hover:not(.disabled) {
+      background-color: #7c3aed;
+    }
+    
+    .pagination-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Estilos para o modal */
+    #question-modal {
+      backdrop-filter: blur(4px);
+    }
   </style>
   <!-- Carrega o JavaScript com defer para garantir que o DOM esteja pronto -->
   <script src="index.js" defer></script>
@@ -40,40 +68,41 @@
     </ul>
   </nav>
 
-  <!-- Dropdown Mobile para exibição da lista de questões -->
-  <div class="md:hidden p-4 bg-gray-800 relative">
-    <button id="mobile-dropdown-btn" class="w-full bg-gray-700 text-white p-3 rounded-lg">
-      Mostrar Questões ▼
-    </button>
-    <!-- Este container ficará visível ao clicar no botão -->
-    <div id="mobile-question-list" class="hidden absolute left-0 right-0 bg-gray-800 mt-2 z-50 overflow-y-auto shadow-xl">
+  <!-- Container principal com cards de questões -->
+  <div class="container mx-auto p-4">
+    <!-- Título e contador -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-purple-600 mb-2">Lista de Questões</h2>
+      <p id="question-count" class="text-gray-400">Carregando...</p>
+    </div>
 
-     
-      <!-- A lista de questões mobile será injetada aqui via JavaScript -->
+    <!-- Grid de cards de questões -->
+    <div id="questions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+      <!-- Os cards serão inseridos aqui via JavaScript -->
+    </div>
+
+    <!-- Paginação -->
+    <div id="pagination" class="flex justify-center items-center space-x-2 mb-8">
+      <!-- Os botões de paginação serão inseridos aqui via JavaScript -->
     </div>
   </div>
 
-  <!-- Container principal: Sidebar para desktop e área de detalhes -->
-  <div class="flex flex-col md:flex-row min-h-[calc(100vh-80px)]">
-    
-    <!-- Sidebar fixa para desktop -->
-    <aside class="bg-gray-800 p-5 md:w-1/4 hidden md:block overflow-y-auto">
-
-      <h2 class="text-xl font-bold text-purple-600 mb-4">Questões</h2>
-      <div id="question-list" class="flex flex-col gap-3">
-        <!-- A lista de questões desktop será injetada aqui via JavaScript -->
+  <!-- Modal para exibir detalhes da questão -->
+  <div id="question-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[95vh] overflow-y-auto">
+      <div class="p-4 sm:p-6">
+        <!-- Cabeçalho do modal -->
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-lg sm:text-xl font-bold text-purple-600">Detalhes da Questão</h3>
+          <button id="close-modal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+        
+        <!-- Conteúdo do modal -->
+        <div id="modal-content">
+          <!-- O conteúdo será inserido aqui via JavaScript -->
+        </div>
       </div>
-    </aside>
-
-    <!-- Área de conteúdo principal para exibir detalhes da questão selecionada -->
-    <main class="flex-1 p-5">
-
-      <div id="question-detail" class="bg-gray-800 p-5 rounded-lg">
-
-        <p>Selecione uma questão na lista para ver os detalhes.</p>
-
-      </div>
-    </main>
+    </div>
   </div>
 </body>
 </html>

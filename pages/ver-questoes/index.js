@@ -12,60 +12,161 @@ const ANSWERS_DATA_ENDPOINT = `${BASE_URL}/tables/answers/data`; // Usado para s
 let currentQuestion = null;
 let currentAnswers = [];
 
-// Variável para controlar se o dropdown mobile está aberto
-let mobileDropdownOpen = false;
+// Variáveis para paginação
+let allQuestions = [];
+let currentPage = 1;
+const QUESTIONS_PER_PAGE = 20;
+let totalPages = 1;
 
-// --- Eventos e Funções do Dropdown Mobile ---
+// --- Eventos do Modal ---
 
-// Alterna a exibição do dropdown mobile quando o botão é clicado
-document.getElementById('mobile-dropdown-btn').addEventListener('click', () => {
-  const mobileList = document.getElementById('mobile-question-list');
-  mobileDropdownOpen = !mobileDropdownOpen;
-  mobileList.classList.toggle('hidden');
+// Fecha o modal quando clicar no X ou fora dele
+document.getElementById('close-modal').addEventListener('click', closeModal);
+document.getElementById('question-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'question-modal') {
+    closeModal();
+  }
 });
 
-// --- Funções Auxiliares para Renderização da Lista de Questões ---
+// Fecha o modal com ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+});
 
-// Cria um item (div) representando uma questão para ambas as versões
-function createQuestionItem(q) {
-  const item = document.createElement('div');
-  item.className = 'bg-gray-700 p-3 rounded cursor-pointer hover:bg-gray-600 transition-colors';
-  // Exibe os primeiros 50 caracteres da questão
-  item.textContent = q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '');
-  item.addEventListener('click', () => {
-    loadQuestionDetail(q.id);
-    // Se estiver em mobile, fecha o dropdown após selecionar
-    if (window.innerWidth < 768) {
-      document.getElementById('mobile-question-list').classList.add('hidden');
-      mobileDropdownOpen = false;
-    }
+// Atualiza a paginação quando a janela é redimensionada
+window.addEventListener('resize', () => {
+  if (allQuestions.length > 0) {
+    renderPagination();
+  }
+});
+
+// --- Funções para o Sistema de Cards e Paginação ---
+
+// Cria um card para uma questão
+function createQuestionCard(question) {
+  const card = document.createElement('div');
+  card.className = 'question-card bg-gray-700 p-4 rounded-lg border border-gray-600';
+  
+  // Trunca o texto da questão para caber no card
+  const truncatedQuestion = question.question.length > 100 
+    ? question.question.substring(0, 100) + '...' 
+    : question.question;
+  
+  card.innerHTML = `
+    <div class="mb-2">
+      <span class="text-xs text-gray-400">Criado por:</span>
+      <span class="text-sm text-purple-400 ml-1">${question.created_by}</span>
+    </div>
+    <p class="text-sm text-gray-200 mb-3">${truncatedQuestion}</p>
+    <div class="text-xs text-gray-400 text-right">Clique para ver detalhes</div>
+  `;
+  
+  card.addEventListener('click', () => {
+    loadQuestionDetail(question.id);
   });
-  return item;
+  
+  return card;
 }
 
-// Renderiza a lista de questões nas duas versões: desktop e mobile
-function renderQuestionList(questions) {
-  const desktopList = document.getElementById('question-list');
-  const mobileList = document.getElementById('mobile-question-list');
+// Renderiza os cards da página atual
+function renderQuestionCards() {
+  const grid = document.getElementById('questions-grid');
+  grid.innerHTML = '';
   
-  // Limpa os containers para evitar duplicação
-  desktopList.innerHTML = '';
-  mobileList.innerHTML = '';
-
-  questions.forEach(q => {
-    if (!q.id) {
-      console.error("Erro: Questão sem id:", q);
+  const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE;
+  const endIndex = startIndex + QUESTIONS_PER_PAGE;
+  const questionsToShow = allQuestions.slice(startIndex, endIndex);
+  
+  questionsToShow.forEach(question => {
+    if (!question.id) {
+      console.error("Erro: Questão sem id:", question);
       return;
     }
     
-    // Cria e adiciona o item para desktop
-    const desktopItem = createQuestionItem(q);
-    desktopList.appendChild(desktopItem);
-
-    // Cria e adiciona o item para mobile
-    const mobileItem = createQuestionItem(q);
-    mobileList.appendChild(mobileItem);
+    const card = createQuestionCard(question);
+    grid.appendChild(card);
   });
+}
+
+// Renderiza a paginação
+function renderPagination() {
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+  
+  if (totalPages <= 1) return;
+  
+  // Botão anterior
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = '‹';
+  prevBtn.className = `pagination-btn px-3 py-2 rounded ${currentPage === 1 ? 'disabled bg-gray-600' : 'bg-purple-600 hover:bg-purple-700'}`;
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderQuestionCards();
+      renderPagination();
+      updateQuestionCount();
+    }
+  });
+  pagination.appendChild(prevBtn);
+  
+  // Números das páginas (mostra menos páginas em mobile)
+  const isMobile = window.innerWidth < 768;
+  const maxPagesToShow = isMobile ? 3 : 5;
+  const halfPages = Math.floor(maxPagesToShow / 2);
+  const startPage = Math.max(1, currentPage - halfPages);
+  const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+  
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = document.createElement('button');
+    pageBtn.textContent = i;
+    pageBtn.className = `pagination-btn px-3 py-2 rounded ${i === currentPage ? 'bg-purple-800' : 'bg-purple-600 hover:bg-purple-700'}`;
+    pageBtn.addEventListener('click', () => {
+      currentPage = i;
+      renderQuestionCards();
+      renderPagination();
+      updateQuestionCount();
+    });
+    pagination.appendChild(pageBtn);
+  }
+  
+  // Botão próximo
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = '›';
+  nextBtn.className = `pagination-btn px-3 py-2 rounded ${currentPage === totalPages ? 'disabled bg-gray-600' : 'bg-purple-600 hover:bg-purple-700'}`;
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderQuestionCards();
+      renderPagination();
+      updateQuestionCount();
+    }
+  });
+  pagination.appendChild(nextBtn);
+}
+
+// Atualiza o contador de questões
+function updateQuestionCount() {
+  const countElement = document.getElementById('question-count');
+  const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE + 1;
+  const endIndex = Math.min(currentPage * QUESTIONS_PER_PAGE, allQuestions.length);
+  
+  countElement.textContent = `Mostrando ${startIndex}-${endIndex} de ${allQuestions.length} questões`;
+}
+
+// Abre o modal com os detalhes da questão
+function openModal() {
+  document.getElementById('question-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; // Previne scroll do body
+}
+
+// Fecha o modal
+function closeModal() {
+  document.getElementById('question-modal').classList.add('hidden');
+  document.body.style.overflow = 'auto'; // Restaura scroll do body
 }
 
 // --- Toggle do Menu Hamburguer (Sidebar Desktop) ---
@@ -83,7 +184,7 @@ async function fetchQuestionsList() {
     },
     body: JSON.stringify({
       columns: ["id", "created_by", "question"],
-      page: { size: 15 }
+      page: { size: 1000 } // Busca todas as questões de uma vez
     })
   };
 
@@ -91,8 +192,15 @@ async function fetchQuestionsList() {
     const response = await fetch(QUESTIONS_QUERY_ENDPOINT, options);
     const data = await response.json();
     console.log("Questões carregadas:", data);
-    const records = data.records || [];
-    renderQuestionList(records);
+    allQuestions = data.records || [];
+    
+    // Calcula o número total de páginas
+    totalPages = Math.ceil(allQuestions.length / QUESTIONS_PER_PAGE);
+    
+    // Renderiza os cards e a paginação
+    renderQuestionCards();
+    renderPagination();
+    updateQuestionCount();
   } catch (error) {
     console.error("Erro ao buscar questões:", error);
   }
@@ -146,16 +254,89 @@ async function loadQuestionDetail(questionId) {
     console.log("Respostas carregadas:", answersData);
     currentAnswers = answersData.records || [];
 
-    // Renderiza os detalhes da questão e alternativas
-    renderQuestionDetail(currentQuestion, currentAnswers);
+    // Renderiza os detalhes da questão e alternativas no modal
+    renderQuestionDetailInModal(currentQuestion, currentAnswers);
+    openModal();
   } catch (error) {
     console.error("Erro ao carregar detalhes da questão:", error);
   }
 }
 
-// --- Função para Renderizar os Detalhes da Questão e Suas Alternativas ---
+// --- Função para Renderizar os Detalhes da Questão no Modal ---
+function renderQuestionDetailInModal(question, answers) {
+  const modalContent = document.getElementById('modal-content');
+  modalContent.innerHTML = '';
+
+  // Exibe o "criado por" alinhado à direita
+  const creatorDiv = document.createElement('div');
+  creatorDiv.className = 'text-right mb-4';
+  creatorDiv.innerHTML = `<span class="text-sm text-gray-400">criado por:</span><br><span class="font-medium text-purple-400">${question.created_by}</span>`;
+  modalContent.appendChild(creatorDiv);
+
+  // Exibe o texto da questão
+  const questionTextEl = document.createElement('div');
+  questionTextEl.className = 'text-lg font-semibold mb-6 text-gray-200';
+  questionTextEl.textContent = question.question;
+  modalContent.appendChild(questionTextEl);
+
+  // Exibe as alternativas da questão
+  const alternativesList = document.createElement('ul');
+  alternativesList.className = 'list-none p-0 space-y-3 mb-6';
+  if (answers.length === 0) {
+    const noAnswers = document.createElement('p');
+    noAnswers.className = 'text-gray-400 text-center py-4';
+    noAnswers.textContent = "Nenhuma alternativa cadastrada para esta questão.";
+    alternativesList.appendChild(noAnswers);
+  } else {
+    answers.forEach((ans, index) => {
+      const li = document.createElement('li');
+      li.className = 'p-4 rounded-lg border';
+      if (ans.is_correct) {
+        li.classList.add('bg-purple-600', 'text-white', 'border-purple-500');
+      } else {
+        li.classList.add('bg-gray-700', 'border-gray-600', 'text-gray-200');
+      }
+      
+      // Adiciona letra da alternativa (A, B, C, D...)
+      const letter = String.fromCharCode(65 + index);
+      li.innerHTML = `<span class="font-bold mr-2">${letter})</span>${ans.answer}`;
+      alternativesList.appendChild(li);
+    });
+  }
+  modalContent.appendChild(alternativesList);
+
+  // Cria os botões de ação: Deletar e Editar
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.className = 'flex gap-3 justify-end';
+  
+  const deleteButton = document.createElement('button');
+  deleteButton.className = 'bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors';
+  deleteButton.textContent = 'Deletar';
+  deleteButton.onclick = () => {
+    if (confirm('Tem certeza que deseja excluir esta questão?')) {
+      deleteQuestion(question.id);
+      closeModal();
+    }
+  };
+
+  const editButton = document.createElement('button');
+  editButton.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors';
+  editButton.textContent = 'Editar';
+  editButton.onclick = () => {
+    closeModal();
+    enterEditModeInModal(question, answers);
+  };
+
+  buttonsDiv.appendChild(editButton);
+  buttonsDiv.appendChild(deleteButton);
+  modalContent.appendChild(buttonsDiv);
+}
+
+// --- Função para Renderizar os Detalhes da Questão e Suas Alternativas (versão antiga para compatibilidade) ---
 function renderQuestionDetail(question, answers) {
   const detailContainer = document.getElementById('question-detail');
+  if (!detailContainer) return; // Se não existir o container, não faz nada
+  
   detailContainer.innerHTML = '';
 
   // Exibe o "criado por" alinhado à direita
@@ -211,9 +392,52 @@ function renderQuestionDetail(question, answers) {
   detailContainer.appendChild(buttonsDiv);
 }
 
-// --- Função para Entrar no Modo de Edição da Questão ---
+// --- Função para Entrar no Modo de Edição da Questão no Modal ---
+function enterEditModeInModal(question, answers) {
+  const modalContent = document.getElementById('modal-content');
+  modalContent.innerHTML = `
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-300 mb-2">Questão:</label>
+      <textarea class="edit-question w-full p-3 bg-gray-700 text-white rounded border border-gray-600" rows="4">${question.question}</textarea>
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-300 mb-2">Alternativas:</label>
+      <div class="alternatives-edit space-y-3"></div>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button class="cancel bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition-colors">Cancelar</button>
+      <button class="save bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">Salvar</button>
+    </div>
+  `;
+
+  const alternativesEdit = modalContent.querySelector('.alternatives-edit');
+  
+  answers.forEach(answer => {
+    const answerDiv = document.createElement('div');
+    answerDiv.className = 'edit-answer flex items-center gap-3 p-3 bg-gray-700 rounded border border-gray-600';
+    answerDiv.dataset.answerId = answer.id;
+    answerDiv.innerHTML = `
+      <input type="text" value="${answer.answer}" class="flex-1 p-2 bg-gray-600 text-white rounded border border-gray-500">
+      <label class="flex items-center gap-1 text-white">
+        <input type="checkbox" ${answer.is_correct ? 'checked' : ''} class="form-checkbox text-purple-600">
+        <span class="text-sm">Correta</span>
+      </label>
+      <button class="delete-answer text-red-400 text-2xl hover:text-red-300">&times;</button>
+    `;
+    answerDiv.querySelector('.delete-answer').onclick = () => answerDiv.remove();
+    alternativesEdit.appendChild(answerDiv);
+  });
+
+  modalContent.querySelector('.save').onclick = saveEdits;
+  modalContent.querySelector('.cancel').onclick = () => 
+    renderQuestionDetailInModal(currentQuestion, currentAnswers);
+}
+
+// --- Função para Entrar no Modo de Edição da Questão (versão antiga para compatibilidade) ---
 function enterEditMode() {
   const detailContainer = document.getElementById('question-detail');
+  if (!detailContainer) return; // Se não existir o container, não faz nada
+  
   detailContainer.innerHTML = `
     <textarea class="edit-question w-full p-3 bg-gray-700 text-white rounded mb-4" rows="4">${currentQuestion.question}</textarea>
     <div class="alternatives-edit space-y-3 mb-4"></div>
@@ -296,7 +520,7 @@ async function saveEdits() {
       console.log(`Resposta ${answer.id} atualizada`);
     }
     
-    // Recarrega os detalhes da questão atualizada
+    // Recarrega os detalhes da questão atualizada no modal
     loadQuestionDetail(currentQuestion.id);
   } catch (error) {
     console.error('Erro ao salvar:', error);
@@ -355,9 +579,22 @@ async function deleteQuestion(questionId) {
         throw new Error(`Erro ao deletar questão: ${deleteQuestionResponse.statusText}: ${errorText}`);
       }
       
-      // Atualiza a lista de questões e limpa o quadro de detalhes
-      fetchQuestionsList();
-      document.getElementById('question-detail').innerHTML = '<p>Selecione uma questão na lista para ver os detalhes.</p>';
+      // Remove a questão da lista local e atualiza a exibição
+      allQuestions = allQuestions.filter(q => q.id !== questionId);
+      totalPages = Math.ceil(allQuestions.length / QUESTIONS_PER_PAGE);
+      
+      // Ajusta a página atual se necessário
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+      }
+      
+      // Atualiza a exibição
+      renderQuestionCards();
+      renderPagination();
+      updateQuestionCount();
+      
+      // Fecha o modal se estiver aberto
+      closeModal();
     } catch (error) {
       console.error('Erro ao deletar:', error);
     }
